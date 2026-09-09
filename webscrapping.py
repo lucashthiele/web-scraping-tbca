@@ -2,8 +2,7 @@ import json
 import requests
 from bs4 import BeautifulSoup
 
-caminho_arquivo = "alimentos.txt"
-valores_principais = []
+caminho_arquivo = "alimentos.json"
 
 url_base = 'http://www.tbca.net.br/base-dados/composicao_alimentos.php'
 
@@ -84,9 +83,7 @@ for cod_alimento, classe_alimento in cod_alimentos:
         'nutrientes': nutrientes
     }
 
-    with open(caminho_arquivo, "a") as file:
+    result.append(alimento_json)
 
-        produto_json_str = json.dumps(alimento_json)
-
-        file.write(produto_json_str + "\n")
-
+with open(caminho_arquivo, "w", encoding="utf-8") as file:
+    json.dump(result, file, ensure_ascii=False, indent=2)
