@@ -1,10 +1,12 @@
 import json
+from urllib.parse import urljoin
+
 import requests
 from bs4 import BeautifulSoup
 
 caminho_arquivo = "alimentos.json"
 
-url_base = 'http://www.tbca.net.br/base-dados/composicao_alimentos.php'
+url_base = 'https://www.tbca.net.br/base-dados/composicao_alimentos.php'
 
 cod_alimentos = []
 
@@ -29,9 +31,20 @@ while continuar_loop:
             if tr_elements:
 
                 for tr in tr_elements:
-                    td_1 = tr.find_all('td')[0].text.strip()
-                    td_5 = tr.find_all('td')[4].text.strip()
-                    cod_alimentos.append((td_1, td_5))
+                    td_elements = tr.find_all('td')
+
+                    if len(td_elements) < 4:
+                        continue
+
+                    link_detalhes = td_elements[0].find('a', href=True)
+
+                    if not link_detalhes:
+                        continue
+
+                    codigo = td_elements[0].text.strip()
+                    classe = td_elements[3].text.strip()
+                    url_detalhes = urljoin(url_base, link_detalhes['href'])
+                    cod_alimentos.append((codigo, classe, url_detalhes))
             else:
 
                 continuar_loop = False
@@ -48,11 +61,9 @@ cod_alimentos = list(set(cod_alimentos))
 
 result = []
 
-for cod_alimento, classe_alimento in cod_alimentos:
+for cod_alimento, classe_alimento, url_detalhes in cod_alimentos:
 
-    url = f'http://www.tbca.net.br/base-dados/int_composicao_alimentos.php?cod_produto={cod_alimento}'
-
-    response = requests.get(url)
+    response = requests.get(url_detalhes)
 
     soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -62,7 +73,9 @@ for cod_alimento, classe_alimento in cod_alimentos:
     table = soup.find('table')
 
     thead = table.find('thead')
-    headers = thead.find_all('th')[:3]
+    headers = [header.text.strip() for header in thead.find_all('th')]
+    headers_nutrientes = headers[:3]
+    headers_porcoes = headers[3:]
 
     tbody = table.find('tbody')
     rows = tbody.find_all('tr')
@@ -70,16 +83,20 @@ for cod_alimento, classe_alimento in cod_alimentos:
     nutrientes = []
 
     for row in rows:
-        values = row.find_all('td')[:3]
-        row_data = {}
-        for i, header in enumerate(headers):
-            row_data[header.text.strip()] = values[i].text.strip()
+        values = [value.text.strip() for value in row.find_all('td')]
+
+        if len(values) < len(headers_nutrientes):
+            continue
+
+        row_data = dict(zip(headers_nutrientes, values[:3]))
+        row_data['porcoes'] = dict(zip(headers_porcoes, values[3:]))
         nutrientes.append(row_data)
 
     alimento_json = {
         'codigo': cod_alimento,
         'classe': classe_alimento,
         'descricao': descricao,
+        'porcoes': headers_porcoes,
         'nutrientes': nutrientes
     }
 
