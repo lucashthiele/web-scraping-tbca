@@ -9,9 +9,8 @@ Este projeto consiste em um web scraping que obtém as informações da Tabela B
 
 [![Python](https://img.shields.io/badge/Python-3.8-blue)](https://www.python.org/downloads/release/python-380/)
 [![BeautifulSoup](https://img.shields.io/badge/BeautifulSoup-4.12.2-brightgreen)](https://pypi.org/project/beautifulsoup4/)
-[![cx_Oracle](https://img.shields.io/badge/cx_Oracle-8.3.0-red)](https://pypi.org/project/cx-Oracle/)
 
 
 
 ## Uso dos Dados
-O arquivo "alimentos.txt" contém os dados nutricionais dos alimentos. Ele pode ser facilmente importado e utilizado em outros aplicativos, sistemas ou projetos relacionados à nutrição. Os dados estão estruturados em um formato JSON, o que facilita a manipulação e extração das informações necessárias.
+O arquivo `alimentos.json` contém os dados nutricionais dos alimentos em uma lista JSON. Ele pode ser facilmente importado e utilizado em outros aplicativos, sistemas ou projetos relacionados à nutrição.
