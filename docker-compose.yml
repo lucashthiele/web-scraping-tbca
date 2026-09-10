@@ -1,0 +1,26 @@
+services:
+  mongodb:
+    image: mongo:8.3.9
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-tbca}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-tbca-local}
+      # Docker Desktop currently uses a Linux 6.19+ VM kernel. Re-enable glibc
+      # rseq so MongoDB's TCMalloc startup guard and allocator remain compatible.
+      GLIBC_TUNABLES: glibc.pthread.rseq=1
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --username $$MONGO_INITDB_ROOT_USERNAME --password $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval 'db.adminCommand({ ping: 1 }).ok'",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  mongodb_data:
